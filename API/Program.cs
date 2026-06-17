@@ -23,6 +23,8 @@ builder.Services.AddDbContext<AppDbContext>( opt=>
 {
    opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+// cross origin resource sharing (safety feature) that restricts web pages from making requests to a different domain than the one that served the original web page
+builder.Services.AddCors(); 
 
 /* Building the application
 This finalizes the configuration and officially creates the app instance. Once this is called, you can no longer register new services;
@@ -35,6 +37,8 @@ This configures the middleware pipeline
 MapControllers tells .NET to look at your controller classes and route incomming HTTP request to the correct code
 */
 
+app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
+    .WithOrigins("http://localhost:3000", "https://localhost:3000"));
 app.MapControllers();
 
 /*

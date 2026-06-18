@@ -9,8 +9,8 @@ import { useEffect, useState } from "react";
 
 /* Our goal is to fetch data from the API and then store it somewhere and display it
   In order to remember something inside a component, we need to HOOK into react functionality
-  And we do that using React hooks
-   */
+  And we do that using React hooks */
+  
 function App() {
   const [activities, setActivities] = useState<Activity[]>([]);
 

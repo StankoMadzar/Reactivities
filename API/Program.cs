@@ -1,3 +1,5 @@
+using Application.Activities.Queries;
+using Application.Core;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
@@ -23,8 +25,16 @@ builder.Services.AddDbContext<AppDbContext>( opt=>
 {
    opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
 // cross origin resource sharing (safety feature) that restricts web pages from making requests to a different domain than the one that served the original web page
 builder.Services.AddCors(); 
+builder.Services.AddMediatR(x => 
+    x.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>());
+builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+
+/* Reflection >> "Go find the compiled project (Assembly) where GetActivityList.Handler lives. 
+Once you are inside that project, scan every single class in the entire file structure. 
+If you find any class that implements IRequestHandler, register it automatically!"*/
 
 /* Building the application
 This finalizes the configuration and officially creates the app instance. Once this is called, you can no longer register new services;

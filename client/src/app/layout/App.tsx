@@ -1,6 +1,8 @@
-import { List, ListItem, ListItemText, Typography } from "@mui/material";
+import { Box, Container, CssBaseline} from "@mui/material";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import NavBar from "./NavBar";
+import ActivityDashboard from "../../features/activities/Dashboard/ActivityDashboard";
 
 /* This is our App component 
   React components are just functions that return JSX
@@ -10,9 +12,10 @@ import { useEffect, useState } from "react";
 /* Our goal is to fetch data from the API and then store it somewhere and display it
   In order to remember something inside a component, we need to HOOK into react functionality
   And we do that using React hooks */
-  
+
 function App() {
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | undefined>(undefined);
 
   useEffect(() => {
     axios.get<Activity[]>('https://localhost:5001/api/activities') // fetch returns a javascript promise, which we must unwrap
@@ -21,17 +24,28 @@ function App() {
     return () => { }
   }, [])
 
+  const handleSelectActivity = (id: string) => {
+    setSelectedActivity(activities.find(x => x.id === id));
+  }
+
+  const handleCancelSelectActivity = () => {
+    setSelectedActivity(undefined);
+  }
+
   return (
-    <>
-      <Typography variant='h3'>Reactivities</Typography>
-      <List>
-        {activities.map((activity) => (
-          <ListItem key={activity.id}>
-            <ListItemText>{activity.title}</ListItemText>
-          </ListItem>
-        ))}
-      </List>
-    </>
+    <Box sx={{bgcolor: '#eeeeee'}}>
+      <CssBaseline />
+      <NavBar />
+      <Container maxWidth='xl' sx={{ mt: 3 }}>
+        <ActivityDashboard 
+        activities={activities} 
+        selectActivity={handleSelectActivity}
+        cancelSelectActivity={handleCancelSelectActivity}
+        selectedActivity={selectedActivity}
+        />
+      </Container>
+
+    </Box>
   )
 }
 

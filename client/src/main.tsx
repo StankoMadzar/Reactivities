@@ -6,11 +6,18 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import App from './app/layout/App.tsx'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+const queryClient = new QueryClient();
 
 /* We have some javascript code to get an element by its ID (div with the ID of 'root')
   Then we use react functionality, a method called create root and then it renders our react app */
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <ReactQueryDevtools/>
+      <App />
+    </QueryClientProvider>
   </StrictMode>,
 )

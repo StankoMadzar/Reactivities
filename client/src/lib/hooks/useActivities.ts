@@ -23,7 +23,7 @@ export const useActivities = (id?: string) => {
             const response = await agent.get<Activity>(`/activities/${id}`)
             return response.data
         },
-        enabled: !!id   //will cast id to bolean and executes the function based on true or false
+        enabled: !!id   // will cast id to bolean and executes the function based on true or false
     })
 
     const updateActivity = useMutation({

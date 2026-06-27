@@ -1,3 +1,4 @@
+using API.Middleware;
 using Application.Activities.Queries;
 using Application.Activities.Validators;
 using Application.Core;
@@ -30,10 +31,14 @@ builder.Services.AddDbContext<AppDbContext>( opt=>
 
 // cross origin resource sharing (safety feature) that restricts web pages from making requests to a different domain than the one that served the original web page
 builder.Services.AddCors(); 
-builder.Services.AddMediatR(x => 
-    x.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>());
+builder.Services.AddMediatR(x =>
+{
+        x.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>();
+        x.AddOpenBehavior(typeof(ValidationBehaviour<,>));
+});
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 builder.Services.AddValidatorsFromAssemblyContaining<CreateActivityValidator>();
+builder.Services.AddTransient<ExceptionMiddleware>(); // transient meaning that it will only be insantiated when needed
 
 /* Reflection >> "Go find the compiled project (Assembly) where GetActivityList.Handler lives. 
 Once you are inside that project, scan every single class in the entire file structure. 
@@ -49,7 +54,7 @@ var app = builder.Build();
 This configures the middleware pipeline
 MapControllers tells .NET to look at your controller classes and route incomming HTTP request to the correct code
 */
-
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
     .WithOrigins("http://localhost:3000", "https://localhost:3000"));
 app.MapControllers();

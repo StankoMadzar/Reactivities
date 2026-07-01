@@ -11,7 +11,9 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { router } from './app/router/Routes.tsx';
 import { RouterProvider } from 'react-router';
 import { store, StoreContext } from './lib/stores/store.ts';
-import {ToastContainer} from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 const queryClient = new QueryClient();
 
@@ -19,12 +21,14 @@ const queryClient = new QueryClient();
   Then we use react functionality, a method called create root and then it renders our react app */
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <StoreContext.Provider value = {store}>
-      <QueryClientProvider client={queryClient}>
-        <ReactQueryDevtools />
-        <ToastContainer position='bottom-right' hideProgressBar theme='colored'/>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </StoreContext.Provider>
-  </StrictMode>,
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <StoreContext.Provider value={store}>
+        <QueryClientProvider client={queryClient}>
+          <ReactQueryDevtools />
+          <ToastContainer position='bottom-right' hideProgressBar theme='colored' />
+          <RouterProvider router={router} />
+        </QueryClientProvider>
+      </StoreContext.Provider>
+      </LocalizationProvider>
+  </StrictMode>
 )

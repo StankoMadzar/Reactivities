@@ -2,7 +2,9 @@ using API.Middleware;
 using Application.Activities.Queries;
 using Application.Activities.Validators;
 using Application.Core;
+using Domain;
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
@@ -38,7 +40,13 @@ builder.Services.AddMediatR(x =>
 });
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 builder.Services.AddValidatorsFromAssemblyContaining<CreateActivityValidator>();
-builder.Services.AddTransient<ExceptionMiddleware>(); // transient meaning that it will only be insantiated when needed
+builder.Services.AddTransient<ExceptionMiddleware>(); // it's transient >> meaning that it will only be insantiated when needed
+builder.Services.AddIdentityApiEndpoints<User>(opt =>
+{
+    opt.User.RequireUniqueEmail = true;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<AppDbContext>(); // extension method that registers the identity services
 
 /* Reflection >> "Go find the compiled project (Assembly) where GetActivityList.Handler lives. 
 Once you are inside that project, scan every single class in the entire file structure. 
@@ -52,13 +60,17 @@ var app = builder.Build();
 
 /* Configure the HTTP request pipeline.
 This configures the middleware pipeline
+The Exception middleware goes first so that it can catch any errors that occur in the rest of the pipeline.
+Authentication middleware goes before Authorization middleware so that the system knows who the user is before checking if they are allowed to do something.
 MapControllers tells .NET to look at your controller classes and route incomming HTTP request to the correct code
 */
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
     .WithOrigins("http://localhost:3000", "https://localhost:3000"));
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
-
+app.MapGroup("api").MapIdentityApi<User>(); // api/login, api/register
 /*
 Database Migration and Seeding
 This runs after the app is build but before it starts accepting internal traffic
@@ -83,8 +95,9 @@ Once the database structure is up to date, this populates the database with init
 try
 {
     var context = services.GetRequiredService<AppDbContext>();
+    var userManager = services.GetRequiredService<UserManager<User>>();
     await context.Database.MigrateAsync();
-    await DbInitializer.SeedData(context);
+    await DbInitializer.SeedData(context, userManager);
 }
 catch (Exception ex)
 {

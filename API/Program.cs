@@ -4,7 +4,9 @@ using Application.Activities.Validators;
 using Application.Core;
 using Domain;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
@@ -25,7 +27,11 @@ AddDbContext()
 inside appsettings.json for a connection string named "Default connection" to know where the database file lives.
 */
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(opt =>
+{
+    var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+    opt.Filters.Add(new AuthorizeFilter(policy)); // this will require all endpoints to be authenticated unless we explicitly allow anonymous access
+});
 builder.Services.AddDbContext<AppDbContext>( opt=>
 {
    opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -66,6 +72,7 @@ MapControllers tells .NET to look at your controller classes and route incomming
 */
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
+    .AllowCredentials()
     .WithOrigins("http://localhost:3000", "https://localhost:3000"));
 app.UseAuthentication();
 app.UseAuthorization();

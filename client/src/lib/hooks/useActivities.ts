@@ -1,20 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import agent from "../api/agent";
 import { useLocation } from "react-router";
-import type { Activity } from "../types";
+import { useAccount } from "./useAccount";
 
 export const useActivities = (id?: string) => {
 
     const queryClient = useQueryClient();
+    const {currentUser} = useAccount();
     const location = useLocation();
 
-    const { data: activities, isPending } = useQuery({
+    const { data: activities, isLoading } = useQuery({
         queryKey: ['activities'],
         queryFn: async () => {
             const response = await agent.get<Activity[]>('/activities');
             return response.data;
         },
-        enabled: !id && location.pathname === '/activities'
+        enabled: !id && location.pathname === '/activities' && !!currentUser
         // staleTime: 1000 * 60 * 5
     });
 
@@ -24,7 +25,7 @@ export const useActivities = (id?: string) => {
             const response = await agent.get<Activity>(`/activities/${id}`)
             return response.data
         },
-        enabled: !!id   // will cast id to bolean and executes the function based on true or false
+        enabled: !!id && !!currentUser  // will cast id to bolean and executes the function based on true or false (also does the same to current user)
     })
 
     const updateActivity = useMutation({
@@ -58,7 +59,7 @@ export const useActivities = (id?: string) => {
 
     return { 
         activities, 
-        isPending, 
+        isLoading, 
         updateActivity, 
         createActivity, 
         deleteActivity,
